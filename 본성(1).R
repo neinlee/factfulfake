@@ -1,10 +1,15 @@
-
+library(dplyr)
+library(ggplot2)
+library(ggthemes)
 
 
 
 ################################
 #그림1##########################
 ################################
+#Brecke - Conflict Catalog (1999); Population based on various sources (2023) – with major processing by Our World in Data. “Global death rate in violent political conflicts over the long-run” [dataset]. Brecke, “Conflict Catalog”; Various sources, “Population” [original data]. Retrieved February 14, 2024 from https://ourworldindata.org/grapher/global-death-rate-in-violent-political-conflicts-over-the-long-run
+
+
 owid_conflict <- read.csv('owid_deaths-in-conflicts-by-source.csv')
 conflict <- owid_conflict%>%filter(Entity=='death rate (per 100,000)')
 conflict <- conflict%>%mutate(century=Year-Year%%100, years=Year-century)
@@ -224,27 +229,47 @@ ggsave("5장 7.png", fig5.7, dpi = 300, width = 6, height = 8, units = "in")
 #그림8##########################
 ################################
 
-owid_ns_s <- read.csv('owid_violence_ns_vs_s.csv')
+#비국가 사회 폭력 사망률(전체 인구 십만명당)
+#Bowles, S. (2009), Gat, A. (2008), Knauft, B. M. et al (1987), Keeley, L. H. (1996), Pinker, S. (2011), and Walker, R. S., & Bailey, D. H. (2013) – processed by Our World in Data. “Rate of violent deaths (non-state societies)” [dataset]. Bowles, S. (2009), Gat, A. (2008), Knauft, B. M. et al (1987), Keeley, L. H. (1996), Pinker, S. (2011), and Walker, R. S., & Bailey, D. H. (2013) [original data].
+owid_rate.ns <- read.csv('rate-of-violent-deaths-non-state-societies.csv')
+colnames(owid_rate.ns)[4] <- 'death_rate'
+owid_rate.ns <- owid_rate.ns%>%mutate(group='group_2(non_state)')
+owid_rate.ns[1, "Entity"] <- "!Kung Bushmen (Kalahari), with a state authority"
+owid_rate.ns[2, "Entity"] <- "!Kung Bushmen (Kalahari), without a state authority"
+
+
+
+#국가 사회 폭력 사망률(전체 인구 십만명당)
+#Bowles, S. (2009), Gat, A. (2008), Knauft, B. M. et al (1987), Keeley, L. H. (1996), Pinker, S. (2011), and Walker, R. S., & Bailey, D. H. (2013) – processed by Our World in Data. “Rate of violent deaths (state societies)” [dataset]. Bowles, S. (2009), Gat, A. (2008), Knauft, B. M. et al (1987), Keeley, L. H. (1996), Pinker, S. (2011), and Walker, R. S., & Bailey, D. H. (2013) [original data].
+owid_rate.s <- read.csv('rate-of-violent-deaths-state-societies.csv')
+colnames(owid_rate.s)[4] <- 'death_rate'
+owid_rate.s <- owid_rate.s%>%mutate(group='group_1(state)')
+owid_rate.s[7, "Entity"] <- "Tepoztlan (Mexico); 1922 - 1955 CE"
+
+
+#################################################
+# owid_ns_s <- read.csv('owid_violence_ns_vs_s.csv')
+owid_ns_s <- rbind(owid_rate.ns, owid_rate.s)
+View(owid_ns_s)
+
 library(ggpubr)
 
 fig5.8 <- 
   ggbarplot(owid_ns_s, x = "Entity", y = "death_rate",
-          fill = "group",               # change fill color by group
-          # color = "white",            # Set bar border colors to white
-          palette = "grey",             # grey color palett
-          sort.val = "asc",             # Sort the value in ascending order
-          sort.by.groups = TRUE)+       # Sort inside each group
-  # x.text.angle = 90)+         # Rotate vertically x axis texts
-  coord_flip()+
-  labs(title='\n',
-       y='', x='', caption = '')+
-  annotate('text', x=5.5, y=750, label='', size=7)+
-  annotate('text', x=26, y=780, label='', size=7)+
-  theme_few()+
-  theme(plot.caption = element_text(size=18),
+            fill = "group",               # change fill color by group
+            palette = "grey",             # grey color palette
+            sort.val = "asc",             # Sort the value in ascending order
+            sort.by.groups = TRUE,        # Sort inside each group
+            levels.order = c("non-state", "state")) +  # Specify the order of levels
+  coord_flip() +
+  labs(title = '\n', y = '', x = '', caption = '') +
+  annotate('text', x = 5.5, y = 750, label = '', size = 7) +
+  annotate('text', x = 26, y = 780, label = '', size = 7) +
+  theme_few() +
+  theme(plot.caption = element_text(size = 18),
         legend.position = '',
-        plot.title = element_text(hjust=1, size=27),
-        axis.title.x = element_text(size=17),
+        plot.title = element_text(hjust = 1, size = 27),
+        axis.title.x = element_text(size = 17),
         axis.text.x = element_blank())
 
 ggsave("5장 8.png", fig5.8, dpi = 300, width = 6, height = 8, units = "in")

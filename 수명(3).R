@@ -222,7 +222,7 @@ gapmind%>%filter(year==2019, !name%in%exc.list)%>%
 # [1] 0.715736
 
 ################################
-#미주33#########################
+#미주36#########################
 ################################
 
 lm.avg <- summary(lm(data = avg.mind, 
@@ -319,7 +319,116 @@ country.fe%>%
 # wrld.le
 # 1 57.13752
 country.fe%>%
-  mutate(exp.le=country.fe+log(gdp2015)*gdpcoef)%>%
+  mutate(exp.le=country.fe+log(gdp2015)*gdpcoef+yr.fe2015)%>%
   summarise(wrld.le = weighted.mean(exp.le, pop))
 # wrld.le
 # 1 59.78626
+
+(59.78626-57.13752)/(73.22764-57.13752)
+
+
+################################################################################
+#linear trend control###########################################################
+################################################################################
+oneway6019 <- fixest::feols(data=gapmind%>%filter(year>=1960, 
+                                              year<2020, 
+                                              year%%5==0, 
+                                              !name%in%exc.list), 
+                            le~log(gdppc)+year|wbcode,
+                            panel.id = ~wbcode + year)
+oneway0060 <- fixest::feols(data=gapmind%>%filter(year>=1900, 
+                                                  year<=1960, 
+                                                  year%%5==0, 
+                                                  !name%in%exc.list), 
+                            le~log(gdppc)+year|wbcode,
+                            panel.id = ~wbcode + year)
+
+
+fe2 <- fixef(oneway0060)
+country.fe.linear <- as.data.frame(fe2$wbcode)
+colnames(country.fe.linear)[1] <- 'country.fe'
+
+country.fe.linear$wbcode <- rownames(country.fe.linear)
+country.fe.linear <- country.fe.linear%>%
+  left_join(gapmind%>%filter(year==1900)%>%
+              mutate(gdp1900=gdppc)%>%
+              select(wbcode, gdp1900, pop),
+            by = c('wbcode'='wbcode'))
+country.fe.linear <- country.fe.linear%>%
+  left_join(gapmind%>%filter(year==1960)%>%
+              mutate(gdp1960 = gdppc)%>%select(wbcode, gdp1960),
+            by = c('wbcode'='wbcode'))%>%
+  mutate(gdpcoef=6.519767)
+
+country.fe.linear%>%
+  mutate(exp.le=country.fe+log(gdp1900)*gdpcoef+1900*0.290096)%>%
+  summarise(wrld.le = weighted.mean(exp.le, pop))
+# wrld.le
+# 30.94173
+country.fe.linear%>%
+  mutate(exp.le=country.fe+log(gdp1960)*gdpcoef+1900*0.290096)%>%
+  summarise(wrld.le = weighted.mean(exp.le, pop))
+# wrld.le
+# 34.1626
+country.fe.linear%>%
+  mutate(exp.le=country.fe+log(gdp1900)*gdpcoef+1960*0.290096)%>%
+  summarise(wrld.le = weighted.mean(exp.le, pop))
+# wrld.le
+# 48.34749
+country.fe.linear%>%
+  mutate(exp.le=country.fe+log(gdp1960)*gdpcoef+1960*0.290096)%>%
+  summarise(wrld.le = weighted.mean(exp.le, pop))
+# wrld.le
+# 51.56836
+
+(34.1626-30.94173)/(51.56836-30.94173)
+#0.1561511
+(48.34749-30.94173)/(51.56836-30.94173)
+#0.8438489
+
+#############
+#1960-2019###
+#############
+
+fe3 <- fixef(oneway6019)
+country.fe.linear2 <- as.data.frame(fe3$wbcode)
+colnames(country.fe.linear2)[1] <- 'country.fe'
+
+country.fe.linear2$wbcode <- rownames(country.fe.linear2)
+country.fe.linear2 <- country.fe.linear2%>%
+  left_join(gapmind%>%filter(year==1960)%>%
+              mutate(gdp1960=gdppc)%>%
+              select(wbcode, gdp1960, pop),
+            by = c('wbcode'='wbcode'))
+country.fe.linear2 <- country.fe.linear2%>%
+  left_join(gapmind%>%filter(year==2019)%>%
+              mutate(gdp2019 = gdppc)%>%select(wbcode, gdp2019),
+            by = c('wbcode'='wbcode'))%>%
+  mutate(gdpcoef=1.974374)
+
+country.fe.linear2%>%
+  mutate(exp.le=country.fe+log(gdp1960)*gdpcoef+1960*0.225355)%>%
+  summarise(wrld.le = weighted.mean(exp.le, pop))
+# wrld.le
+# 57.9912
+country.fe.linear2%>%
+  mutate(exp.le=country.fe+log(gdp2019)*gdpcoef+1960*0.225355)%>%
+  summarise(wrld.le = weighted.mean(exp.le, pop))
+# wrld.le
+# 61.20245
+country.fe.linear2%>%
+  mutate(exp.le=country.fe+log(gdp1960)*gdpcoef+2019*0.225355)%>%
+  summarise(wrld.le = weighted.mean(exp.le, pop))
+# wrld.le
+# 71.28714
+country.fe.linear2%>%
+  mutate(exp.le=country.fe+log(gdp2019)*gdpcoef+2019*0.225355)%>%
+  summarise(wrld.le = weighted.mean(exp.le, pop))
+# wrld.le
+# 74.49839
+
+(61.20245-57.9912)/(74.49839-57.9912)
+#0.1945364
+(71.28714-57.9912)/(74.49839-57.9912)
+#0.8054636
+

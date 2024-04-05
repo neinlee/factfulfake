@@ -116,6 +116,8 @@ fig4.3 <-
     ggplot(income.swb, aes(x = time)) +
     geom_line(aes(y = income), color = 'black', linewidth = 1.2) +
     geom_line(aes(y = happiness), color = 'grey', linewidth = 1.2) +
+    geom_smooth(aes(y = income), method = 'lm', color = 'black', se = FALSE) +
+    geom_smooth(aes(y = happiness), method = 'lm', color = 'grey', se = FALSE) +
     labs(title = '\n', y = '', caption = '') +
     xlab('') +
     coord_cartesian(ylim = c(0, 7.5)) +
@@ -124,6 +126,7 @@ fig4.3 <-
           axis.text.y = element_blank())+
     geom_vline(xintercept = seq(1, 7, by = 1), 
                color = 'black', alpha = 0.25, linewidth = 0.5)
+
 
 
 ggsave("4장 3.png", fig4.3, dpi = 300, width = 6, height = 4, units = "in")

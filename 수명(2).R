@@ -139,6 +139,16 @@ left <-
                     legend.text = element_blank(),
                     plot.caption = element_blank())
 
+5.375056*log(2500)-5.265472
+#36.78921
+5.375056*log(7400)-5.265472
+#42.62217
+7.996841*log(2500)-8.858897
+#53.70875
+7.996841*log(7400)-8.858897
+#62.38684
+
+
 right <-
   ggplot(gapmind%>%filter(year==1900|year==1960, !name%in%exc.list),
          aes(x=gdppc, y=le, 
@@ -266,6 +276,9 @@ right3.10 <-
     stat_smooth(formula = y~x, method = 'lm', se=F, color='black')+
     theme_few()+theme(axis.title.y = element_text(size=25))
   
+summary(lm(data=avg.mind, avg_le~cagr))
+
+
 left3.10 <-
   ggplot(gapmind%>%filter(year==2019, !name%in%exc.list),
          aes(x=gdppc, y=le))+
