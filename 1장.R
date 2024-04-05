@@ -10,6 +10,7 @@ library(patchwork)
 ##################
 #우울장애 유병률##
 ##################
+# IHME, Global Burden of Disease (2020) – processed by Our World in Data. “Depressive disorders (share of population) - Sex: Both - Age: Age-standardized” [dataset]. IHME, Global Burden of Disease (2020) [original data].
 
 depression <- read.csv('depressive-disorders-prevalence-ihme.csv')
 colnames(depression)[4] <- 'prevalence'
@@ -38,7 +39,7 @@ ggsave("1장 우울증 유병률.png",
 ##################
 #성인 비만률######
 ##################
-
+# WHO, Global Health Observatory (2022) – processed by Our World in Data. “Indicator:Prevalence of obesity among adults, BMI &GreaterEqual; 30 (crude estimate) (%) - Sex:Both sexes” [dataset]. WHO, Global Health Observatory (2022) [original data].
 obesity <- read.csv('share-of-adults-defined-as-obese.csv')
 colnames(obesity)[4] <- 'prevalence'
 tail(obesity)
@@ -129,7 +130,7 @@ ggsave("1장 자유민주주의.png",
 ##################
 #생물다양성#######
 ##################
-
+#https://ourworldindata.org/grapher/global-living-planet-index
 biodiv <- read.csv('global-living-planet-index.csv')
 tail(biodiv)
 
@@ -177,8 +178,7 @@ fig1.10 <-
   theme_few()+
   scale_x_continuous(breaks = c(2000, 2005, 2010, 2015, 2020),
                      labels = c('','','','',''))+
-  scale_y_continuous(breaks = c(0.1, 0.2, 0),
-                     labels = c('','',''))
+  scale_y_continuous(breaks = c(0.1, 0.2, 0.3))
 
 ggsave("1장 멸종위기.png", 
        fig1.10, dpi = 300, width = 3, height = 3, units = "in")
@@ -189,12 +189,13 @@ ggsave("1장 멸종위기.png",
 #긍정 경험########
 ##################
 
-positive <- read_xlsx('Gallup Global Emotions.xlsx', sheet = 1)
-tail(pos.aff)
+gallup.emotions <- read.csv('data-dA2RK.csv')
+gallup.emotions <- rbind(c(2022, 70, 33), gallup.emotions)
+colnames(gallup.emotions)[1] <- 'year'
 
 fig1.3 <-
-  ggplot(positive, 
-         aes(x=year, y=experience))+
+  ggplot(gallup.emotions, 
+         aes(x=year, y=Positive.Experience))+
   geom_area(fill = 'grey', alpha=0.5)+
   geom_line(linewidth=1)+
   geom_point()+
@@ -216,12 +217,9 @@ ggsave("1장 긍정경험.png",
 # 부정 경험########
 # #################
 
-negative <- read_xlsx('Gallup Global Emotions.xlsx', sheet = 2)
-tail(pos.aff)
-
 fig1.4 <-
-  ggplot(negative, 
-         aes(x=year, y=experience))+
+  ggplot(gallup.emotions, 
+         aes(x=year, y=Negative.Experience))+
   geom_area(fill = 'grey', alpha=0.5)+
   geom_line(linewidth=1)+
   geom_point()+
